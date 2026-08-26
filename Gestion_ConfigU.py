@@ -77,3 +77,46 @@ story.append(Paragraph(
     "validación por esquema ni de espacios de nombres, JSON ofrece menor tamaño, parseo nativo "
     "en Python con manejo de errores predecible (json.JSONDecodeError) y mayor legibilidad, por "
     "lo que resulta la opción técnicamente más adecuada frente a XML.", styles["Cuerpo"]))
+
+story.append(Paragraph("2. Implementación de la escritura segura y el respaldo", styles["H1"]))
+story.append(Paragraph(
+    "El guardado nunca sobrescribe <font face='Courier'>config.json</font> directamente. El flujo "
+    "implementado en <font face='Courier'>ConfigManager.guardar()</font> es:", styles["Cuerpo"]))
+story.append(ListFlowable([
+    ListItem(Paragraph("Se valida que exista permiso de escritura en la carpeta destino.", styles["Cuerpo"])),
+    ListItem(Paragraph("Se serializa la configuración completa a <font face='Courier'>config.json.tmp</font> "
+                        "(UTF-8, con <font face='Courier'>ensure_ascii=False</font> para no escapar tildes/ñ), "
+                        "seguido de <font face='Courier'>flush()</font> y <font face='Courier'>os.fsync()</font> "
+                        "para forzar la escritura física a disco.", styles["Cuerpo"])),
+    ListItem(Paragraph("Si ya existía un <font face='Courier'>config.json</font> anterior, se copia a "
+                        "<font face='Courier'>config.json.bak</font> ANTES de reemplazar (respaldo).", styles["Cuerpo"])),
+    ListItem(Paragraph("Se reemplaza el archivo final con <font face='Courier'>os.replace(tmp, final)</font>, "
+                        "operación atómica del sistema operativo: si el proceso se interrumpe abruptamente "
+                        "en cualquier punto anterior al replace, el config.json original permanece intacto; "
+                        "y una vez iniciado el replace, este no queda en un estado intermedio observable.", styles["Cuerpo"])),
+], bulletType="1"))
+
+story.append(Paragraph("Fragmento de código relevante (config_manager.py):", styles["H2"]))
+story.append(code_block(
+"""def guardar(self, config: UserConfig) -> None:
+    carpeta = os.path.dirname(os.path.abspath(self.config_path)) or "."
+    os.makedirs(carpeta, exist_ok=True)
+
+    if not os.access(carpeta, os.W_OK):
+        raise ConfigPermisosError(
+            f"No se tienen permisos de escritura en la carpeta '{carpeta}'."
+        )
+
+    # 1) Escritura a archivo temporal (UTF-8 explicito)
+    with open(self.tmp_path, "w", encoding="utf-8") as f:
+        json.dump(config.to_dict(), f, ensure_ascii=False, indent=2)
+        f.flush()
+        os.fsync(f.fileno())
+
+    # 2) Respaldo del archivo anterior ANTES de reemplazar
+    if os.path.exists(self.config_path):
+        shutil.copy2(self.config_path, self.bak_path)
+
+    # 3) Reemplazo atomico: config.tmp -> config.json
+    os.replace(self.tmp_path, self.config_path)"""
+))
