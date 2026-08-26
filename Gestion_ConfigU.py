@@ -56,3 +56,24 @@ tabla_datos = [
      "Todo es texto; tipos como enteros\no booleanos deben convertirse\nmanualmente."],
     ["Adecuación al\ncaso de uso", "Ideal para configuraciones planas\no poco anidadas como esta (7 campos\nsimples).", "Más apropiado para documentos con\nmetadatos, atributos y esquemas de\nvalidación complejos (XSD), lo cual\nes innecesario aquí."],
 ]
+t = Table(tabla_datos, colWidths=[3.4*cm, 6.3*cm, 6.3*cm])
+t.setStyle(TableStyle([
+    ("BACKGROUND", (0,0), (-1,0), colors.HexColor("#1a3d63")),
+    ("TEXTCOLOR", (0,0), (-1,0), colors.white),
+    ("FONTNAME", (0,0), (-1,0), "Helvetica-Bold"),
+    ("FONTSIZE", (0,0), (-1,-1), 8.3),
+    ("GRID", (0,0), (-1,-1), 0.5, colors.HexColor("#cccccc")),
+    ("VALIGN", (0,0), (-1,-1), "TOP"),
+    ("ROWBACKGROUNDS", (0,1), (-1,-1), [colors.white, colors.HexColor("#f7f9fb")]),
+    ("LEFTPADDING", (0,0), (-1,-1), 5),
+    ("RIGHTPADDING", (0,0), (-1,-1), 5),
+    ("TOPPADDING", (0,0), (-1,-1), 4),
+    ("BOTTOMPADDING", (0,0), (-1,-1), 4),
+]))
+story.append(t)
+story.append(Spacer(1, 8))
+story.append(Paragraph(
+    "<b>Conclusión:</b> para un archivo de configuración plano de 7 campos, sin necesidad de "
+    "validación por esquema ni de espacios de nombres, JSON ofrece menor tamaño, parseo nativo "
+    "en Python con manejo de errores predecible (json.JSONDecodeError) y mayor legibilidad, por "
+    "lo que resulta la opción técnicamente más adecuada frente a XML.", styles["Cuerpo"]))
